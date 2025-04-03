@@ -1,0 +1,168 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style type="text/css">
+span.lineno { color: white; background: #aaaaaa; border-right: solid white 12px }
+span.nottickedoff { background: yellow}
+span.istickedoff { background: white }
+span.tickonlyfalse { margin: -1px; border: 1px solid #f20913; background: #f20913 }
+span.tickonlytrue  { margin: -1px; border: 1px solid #60de51; background: #60de51 }
+span.funcount { font-size: small; color: orange; z-index: 2; position: absolute; right: 20 }
+span.decl { font-weight: bold }
+span.spaces    { background: white }
+</style>
+</head>
+<body>
+<pre>
+<span class="decl"><span class="nottickedoff">never executed</span> <span class="tickonlytrue">always true</span> <span class="tickonlyfalse">always false</span></span>
+</pre>
+<pre>
+<span class="lineno">    1 </span>{-|
+<span class="lineno">    2 </span>Module      : Tarefa2
+<span class="lineno">    3 </span>Description : Auxiliares do Jogo
+<span class="lineno">    4 </span>Copyright   : Nuno Henrique Dias Pereira &lt;a110067@alunos.uminho.pt&gt;
+<span class="lineno">    5 </span>              Rafael Figueiras Esteves &lt;a112032@alunos.uminho.pt&gt;
+<span class="lineno">    6 </span>
+<span class="lineno">    7 </span>
+<span class="lineno">    8 </span>Módulo para a realização da Tarefa 2 de LI1 em 2024/25.
+<span class="lineno">    9 </span>-}
+<span class="lineno">   10 </span>module Tarefa2 where
+<span class="lineno">   11 </span>
+<span class="lineno">   12 </span>import LI12425
+<span class="lineno">   13 </span>
+<span class="lineno">   14 </span>-- | Calcula os  inimigos ao  alcance de uma dada torre 
+<span class="lineno">   15 </span>inimigosNoAlcance :: Torre -&gt; [Inimigo] -&gt; [Inimigo]
+<span class="lineno">   16 </span><span class="decl"><span class="istickedoff">inimigosNoAlcance _ [] = []</span>
+<span class="lineno">   17 </span><span class="spaces"></span><span class="istickedoff">inimigosNoAlcance  t@(Torre pt dt at rt ct tt jetilt) (i:is) </span>
+<span class="lineno">   18 </span><span class="spaces">    </span><span class="istickedoff">| distancia pt (posicaoInimigo i) &lt;= at  = i : inimigosNoAlcance (Torre pt <span class="nottickedoff">dt</span> at <span class="nottickedoff">rt</span> <span class="nottickedoff">ct</span> <span class="nottickedoff">tt</span> <span class="nottickedoff">jetilt</span>) is</span>
+<span class="lineno">   19 </span><span class="spaces">    </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> = inimigosNoAlcance <span class="nottickedoff">(Torre pt dt at rt ct tt jetilt)</span> is</span></span>
+<span class="lineno">   20 </span>
+<span class="lineno">   21 </span>
+<span class="lineno">   22 </span>-- | Função que atualiza o estado de um inimigo assumindo que este acaba de ser atingido por um projétil de uma torre
+<span class="lineno">   23 </span>atingeInimigo :: Torre -&gt; Inimigo -&gt; Inimigo
+<span class="lineno">   24 </span><span class="decl"><span class="istickedoff">atingeInimigo t@(Torre pt dt at rt ct tt (Projetil tipo dur)) i@(Inimigo posI dI viI velI aI buI  projetI)</span>
+<span class="lineno">   25 </span><span class="spaces">  </span><span class="istickedoff">|<span class="tickonlytrue">tipo ==  Fogo</span>  =                                                                           -- ao ser atingido por fogo</span>
+<span class="lineno">   26 </span><span class="spaces">    </span><span class="istickedoff">if <span class="tickonlyfalse">existeGelo projetI</span> then <span class="nottickedoff">Inimigo posI dI (viI-dt) velI aI buI  (removerGelo projetI)</span>      -- caso esteja sobre o efeito de gelo entao irao se cancelar</span>
+<span class="lineno">   27 </span><span class="spaces">    </span><span class="istickedoff">else if <span class="tickonlyfalse">existeResina projetI</span> then <span class="nottickedoff">Inimigo posI dI (viI-dt) velI aI buI  (Projetil Fogo (multiplicarDuracao dur 2):removerResina projetI)</span> -- caso esteja sobre o efeito de resina entao ira duplicar a duracao do projetil de fogo (caso seja resina atingida por fogo ira ficar so com fogo)</span>
+<span class="lineno">   28 </span><span class="spaces">    </span><span class="istickedoff">else if <span class="tickonlyfalse">existeFogo projetI</span> then <span class="nottickedoff">let dpi = duracaoProjetil (fogoProjetil projetI) -- caso esteja sobre o efeito de fogo entao a duracao do projetil anterior ira se sonar com a duracao do projetil disparado e ira dar a duracao do novo projetil e remover o projetil anterior de fogo para n esrar sobre o efeito de dois projeteis ao mesmo trempo</span></span>
+<span class="lineno">   29 </span><span class="spaces">                                     </span><span class="istickedoff"><span class="nottickedoff">in Inimigo posI dI (viI-dt) velI aI buI  (Projetil Fogo (somarDuracoes dpi dur):removerFogo projetI)</span></span>
+<span class="lineno">   30 </span><span class="spaces">    </span><span class="istickedoff">else Inimigo posI dI (viI-dt) velI aI buI  [(Projetil tipo dur)]  -- caso n esteja sobre o efeito de nada (lista vazia) ira passar a estar sobre o efeito do projetil de fogo</span>
+<span class="lineno">   31 </span><span class="spaces">  </span><span class="istickedoff">|<span class="nottickedoff">tipo == Gelo</span> =                                                         -- ao ser atingido por gelo</span>
+<span class="lineno">   32 </span><span class="spaces">    </span><span class="istickedoff"><span class="nottickedoff">if existeFogo projetI then Inimigo posI dI (viI-dt) velI aI buI  (removerFogo projetI) -- caso esteja sobre o efeito de fogo entao os efeitos irao se cancelar removendo o efeito de fogo</span></span>
+<span class="lineno">   33 </span><span class="spaces">    </span><span class="istickedoff"><span class="nottickedoff">else if existeGelo projetI then  let dpi = duracaoProjetil (geloProjetil projetI)  -- caso esteja sobre o efeito de gelo entao o a duracao do projetil novo sera a soma do projetil disparado com o projetil antigo e ira remover o projetil antigo para n estar sobre o efeito de dois ao mesmo trempo</span></span>
+<span class="lineno">   34 </span><span class="spaces">                                     </span><span class="istickedoff"><span class="nottickedoff">in Inimigo posI dI (viI-dt) velI aI buI  (Projetil Gelo (somarDuracoes dpi dur):(removerGelo projetI)) </span></span>
+<span class="lineno">   35 </span><span class="spaces">    </span><span class="istickedoff"><span class="nottickedoff">else if existeResina projetI then Inimigo posI dI (viI-dt) velI aI buI  ((Projetil tipo dur):projetI) -- caso esteja sobre o efeito de resina entao para chegar aqui significa q nem tem gelo nem fogo logo so esta sobre o efeito de resina logo ira ficar sobre o efeito de ambos gelo e resina</span></span>
+<span class="lineno">   36 </span><span class="spaces">       </span><span class="istickedoff"><span class="nottickedoff">else Inimigo posI dI (viI-dt) velI aI buI  [(Projetil tipo dur)]</span>  -- caso n esteja sobre o efeito de nada fica sobre o efeito de gelo</span>
+<span class="lineno">   37 </span><span class="spaces">  </span><span class="istickedoff">|<span class="nottickedoff">tipo == Resina</span> =                                                                  -- ao ser atingido por resina</span>
+<span class="lineno">   38 </span><span class="spaces">    </span><span class="istickedoff"><span class="nottickedoff">if existeResina projetI then let dpi = duracaoProjetil (resinaProjetil projetI)   -- caso esteja sobre o efeito de resina entao a soma da duracao do projetil antigo e do projetil disparado ira resultar na duracao do novo projetil e ira remover o projetil antigo para n estar sobre o efeito de dois ao mesmo tempo</span></span>
+<span class="lineno">   39 </span><span class="spaces">                                 </span><span class="istickedoff"><span class="nottickedoff">in Inimigo posI dI (viI-dt) velI aI buI  (Projetil Resina (somarDuracoes dpi dur):removerResina projetI)</span></span>
+<span class="lineno">   40 </span><span class="spaces">    </span><span class="istickedoff"><span class="nottickedoff">else if existeGelo projetI then Inimigo posI dI (viI-dt) velI aI buI  ((Projetil tipo dur):projetI) -- caso esteja sobre o efeito de gelo entao ira ficar ao mesmo tempo sobre efeito de gelo e resina</span></span>
+<span class="lineno">   41 </span><span class="spaces">    </span><span class="istickedoff"><span class="nottickedoff">else if existeFogo projetI then let dpi = duracaoProjetil (fogoProjetil projetI)  -- caso esteja sobre o efeito de fogo entao para chegar a esta fase significa q nem tem resina nem gelo logo ira resultar em ficar so sobre efeito de fogo em que a duracao do projetil novo é o dobro da duracao do projetil de fogo antigo  como pedido no enunciado</span></span>
+<span class="lineno">   42 </span><span class="spaces">                                    </span><span class="istickedoff"><span class="nottickedoff">in Inimigo posI dI (viI-dt) velI aI buI  (Projetil Fogo (multiplicarDuracao dpi 2):removerFogo projetI)</span></span>
+<span class="lineno">   43 </span><span class="spaces">     </span><span class="istickedoff"><span class="nottickedoff">else Inimigo posI dI (viI-dt) velI aI buI  [(Projetil tipo dur)]</span></span></span>  -- caso n esteja sobre o efeito de nada passa a estar sobre o efeito de resina
+<span class="lineno">   44 </span>
+<span class="lineno">   45 </span>-- | Multiplica a duração 
+<span class="lineno">   46 </span>multiplicarDuracao :: Duracao -&gt; Int -&gt; Duracao
+<span class="lineno">   47 </span><span class="decl"><span class="istickedoff">multiplicarDuracao (Finita d) i = Finita (d * (fromIntegral i))</span>
+<span class="lineno">   48 </span><span class="spaces"></span><span class="istickedoff">multiplicarDuracao (Infinita) _ =   Infinita</span></span>
+<span class="lineno">   49 </span>
+<span class="lineno">   50 </span>-- | Soma duas durações
+<span class="lineno">   51 </span>somarDuracoes :: Duracao -&gt; Duracao -&gt; Duracao
+<span class="lineno">   52 </span><span class="decl"><span class="istickedoff">somarDuracoes Infinita _ = Infinita</span>
+<span class="lineno">   53 </span><span class="spaces"></span><span class="istickedoff">somarDuracoes _ Infinita = <span class="nottickedoff">Infinita</span></span>
+<span class="lineno">   54 </span><span class="spaces"></span><span class="istickedoff">somarDuracoes (Finita d1) (Finita d2) = (Finita (d1+d2))</span></span>
+<span class="lineno">   55 </span>
+<span class="lineno">   56 </span>-- | Verifica se existe um projetil de gelo numa lista de projeteis
+<span class="lineno">   57 </span>existeGelo :: [Projetil] -&gt; Bool
+<span class="lineno">   58 </span><span class="decl"><span class="istickedoff">existeGelo [] = False </span>
+<span class="lineno">   59 </span><span class="spaces"></span><span class="istickedoff">existeGelo ((Projetil tipo d):xs) = if tipo == Gelo then True else existeGelo xs</span></span>
+<span class="lineno">   60 </span>
+<span class="lineno">   61 </span>-- | Verifica se existe um projetil de resina numa lista de projeteis
+<span class="lineno">   62 </span>existeResina :: [Projetil] -&gt; Bool
+<span class="lineno">   63 </span><span class="decl"><span class="istickedoff">existeResina lista = any (\(Projetil tipo _) -&gt; tipo == Resina) lista</span></span>
+<span class="lineno">   64 </span>
+<span class="lineno">   65 </span>-- | Verifica se existe um projetil de fogo numa lista de projeteis
+<span class="lineno">   66 </span>existeFogo :: [Projetil] -&gt; Bool
+<span class="lineno">   67 </span><span class="decl"><span class="istickedoff">existeFogo lista =  any (\(Projetil tipo _) -&gt; tipo == Fogo) lista</span></span>
+<span class="lineno">   68 </span>
+<span class="lineno">   69 </span>-- | Remove um projetil de gelo da lista de projeteis
+<span class="lineno">   70 </span>removerGelo :: [Projetil] -&gt; [Projetil]
+<span class="lineno">   71 </span><span class="decl"><span class="istickedoff">removerGelo [] = <span class="nottickedoff">[]</span></span>
+<span class="lineno">   72 </span><span class="spaces"></span><span class="istickedoff">removerGelo ((Projetil t d):xs) = if <span class="tickonlytrue">t == Gelo</span> then xs else <span class="nottickedoff">Projetil t d : removerGelo xs</span></span></span>
+<span class="lineno">   73 </span>
+<span class="lineno">   74 </span>-- | Remove um projetil de fogo da lista de projeteis
+<span class="lineno">   75 </span>removerFogo :: [Projetil] -&gt; [Projetil]
+<span class="lineno">   76 </span><span class="decl"><span class="istickedoff">removerFogo [] = <span class="nottickedoff">[]</span></span>
+<span class="lineno">   77 </span><span class="spaces"></span><span class="istickedoff">removerFogo ((Projetil t d):xs) = if <span class="tickonlytrue">t == Fogo</span> then xs else <span class="nottickedoff">(Projetil t d) : removerFogo xs</span></span></span>
+<span class="lineno">   78 </span>
+<span class="lineno">   79 </span>
+<span class="lineno">   80 </span>-- | Remove um projetil de resina da lista de projeteis
+<span class="lineno">   81 </span>removerResina :: [Projetil] -&gt; [Projetil]
+<span class="lineno">   82 </span><span class="decl"><span class="istickedoff">removerResina [] = <span class="nottickedoff">[]</span></span>
+<span class="lineno">   83 </span><span class="spaces"></span><span class="istickedoff">removerResina ((Projetil t d):xs) = if <span class="tickonlytrue">t == Resina</span> then xs else <span class="nottickedoff">(Projetil t d)  : removerResina xs</span></span></span>
+<span class="lineno">   84 </span>
+<span class="lineno">   85 </span>-- | Procura um projetil de fogo numa lista em que exista um projetil de fogo
+<span class="lineno">   86 </span>fogoProjetil :: [Projetil] -&gt; Projetil
+<span class="lineno">   87 </span><span class="decl"><span class="istickedoff">fogoProjetil ((Projetil t d):xs) | <span class="tickonlytrue">existeFogo ((Projetil t <span class="nottickedoff">d</span>):<span class="nottickedoff">xs</span>)</span> =  if <span class="tickonlytrue">t == Fogo</span> then (Projetil t d) else <span class="nottickedoff">fogoProjetil xs</span></span></span> 
+<span class="lineno">   88 </span>
+<span class="lineno">   89 </span>-- | Procura um projetil de gelo numa lista em que exista um projetil de fogo
+<span class="lineno">   90 </span>geloProjetil :: [Projetil] -&gt; Projetil
+<span class="lineno">   91 </span><span class="decl"><span class="istickedoff">geloProjetil ((Projetil t d):xs) | <span class="tickonlytrue">existeGelo ((Projetil t <span class="nottickedoff">d</span>):xs)</span> =  if t == Gelo then (Projetil t d) else geloProjetil xs</span></span> 
+<span class="lineno">   92 </span>
+<span class="lineno">   93 </span>-- | Procura um projetil de resina numa lista em que exista um projetil de fogo
+<span class="lineno">   94 </span>resinaProjetil :: [Projetil] -&gt; Projetil
+<span class="lineno">   95 </span><span class="decl"><span class="istickedoff">resinaProjetil ((Projetil t d):xs) | <span class="tickonlytrue">existeResina ((Projetil t <span class="nottickedoff">d</span>):<span class="nottickedoff">xs</span>)</span> =  if <span class="tickonlytrue">t == Resina</span> then (Projetil t d) else <span class="nottickedoff">resinaProjetil xs</span></span></span> 
+<span class="lineno">   96 </span>
+<span class="lineno">   97 </span>{- | Dado um Portal e a lista de inimigos atualmente em jogo, move o próximo
+<span class="lineno">   98 </span>     inimigo a ser lançado pelo portal para a lista de inimigos ativos. Por mover, entende-
+<span class="lineno">   99 </span>     se que o Portal resultante perde aquele inimigo, que é agora  incluıdo
+<span class="lineno">  100 </span>     na lista de inimigos ativos. Deve também garantir que move o inimigo certo, i.e. o
+<span class="lineno">  101 </span>     primeiro inimigo da Onda atualmente ativa -}
+<span class="lineno">  102 </span>ativaInimigo :: Portal -&gt; [Inimigo] -&gt; (Portal, [Inimigo])
+<span class="lineno">  103 </span><span class="decl"><span class="istickedoff">ativaInimigo (Portal posP ((Onda (io:ios) co ton eo):os) ) i = if <span class="tickonlyfalse">ton /= 0</span> then <span class="nottickedoff">(Portal posP ((Onda (io:ios) co ton eo):os) , i)</span> else (Portal posP ((Onda ios co co eo):os) , io:i)</span></span>
+<span class="lineno">  104 </span>
+<span class="lineno">  105 </span>-- | Verifica se o jogo terminou (se o jogador ganhou ou perdeu)
+<span class="lineno">  106 </span>terminouJogo :: Jogo -&gt; Bool
+<span class="lineno">  107 </span><span class="decl"><span class="istickedoff">terminouJogo j = ganhouJogo j || perdeuJogo j</span></span>
+<span class="lineno">  108 </span>
+<span class="lineno">  109 </span>-- | Verifica se o jogador ganhou o jogo
+<span class="lineno">  110 </span>ganhouJogo :: Jogo -&gt; Bool
+<span class="lineno">  111 </span><span class="decl"><span class="istickedoff">ganhouJogo jogo = null (inimigosJogo jogo) &amp;&amp; portaisSemInimigos (portaisJogo jogo) &amp;&amp; vidaBase (baseJogo jogo) &gt; 0</span></span>
+<span class="lineno">  112 </span>
+<span class="lineno">  113 </span>-- | Verifica se o jogador perdeu o jogo
+<span class="lineno">  114 </span>perdeuJogo :: Jogo -&gt; Bool
+<span class="lineno">  115 </span><span class="decl"><span class="istickedoff">perdeuJogo jogo = vidaBase (baseJogo jogo) &lt;= 0</span></span>
+<span class="lineno">  116 </span>
+<span class="lineno">  117 </span>-- | Verifica se os portais estao sem inimigos
+<span class="lineno">  118 </span>portaisSemInimigos :: [Portal] -&gt; Bool
+<span class="lineno">  119 </span><span class="decl"><span class="istickedoff">portaisSemInimigos [] = True</span>
+<span class="lineno">  120 </span><span class="spaces"></span><span class="istickedoff">portaisSemInimigos ((Portal pp o):ps) =  ondasSemInimigos o &amp;&amp; portaisSemInimigos ps</span></span>  
+<span class="lineno">  121 </span>
+<span class="lineno">  122 </span>ondasSemInimigos :: [Onda] -&gt; Bool
+<span class="lineno">  123 </span><span class="decl"><span class="istickedoff">ondasSemInimigos [] = True</span>
+<span class="lineno">  124 </span><span class="spaces"></span><span class="istickedoff">ondasSemInimigos ((Onda i _ _ _):os) = null i &amp;&amp; ondasSemInimigos os</span></span>
+<span class="lineno">  125 </span>
+<span class="lineno">  126 </span>-- | Calcula a distancia entre duas posições
+<span class="lineno">  127 </span>distancia :: Posicao -&gt; Posicao -&gt; Float
+<span class="lineno">  128 </span><span class="decl"><span class="istickedoff">distancia (x1,y1) (x2,y2) = sqrt ((x2-x1)^2 + (y2-y1)^2)</span></span>
+<span class="lineno">  129 </span> 
+<span class="lineno">  130 </span>--  Exemplos
+<span class="lineno">  131 </span>
+<span class="lineno">  132 </span>torre1 :: Torre
+<span class="lineno">  133 </span><span class="decl"><span class="nottickedoff">torre1 = Torre (1,1) 1 1 1 1 1 projetil1</span></span>
+<span class="lineno">  134 </span>
+<span class="lineno">  135 </span>inimigo1 :: Inimigo
+<span class="lineno">  136 </span><span class="decl"><span class="nottickedoff">inimigo1 = Inimigo (1,1) Norte 1 1 1 1 []</span></span>
+<span class="lineno">  137 </span>
+<span class="lineno">  138 </span>inimigos1e2 :: [Inimigo]
+<span class="lineno">  139 </span><span class="decl"><span class="nottickedoff">inimigos1e2 = [inimigo1,inimigo2]</span></span>
+<span class="lineno">  140 </span>
+<span class="lineno">  141 </span>inimigo2 :: Inimigo
+<span class="lineno">  142 </span><span class="decl"><span class="nottickedoff">inimigo2 = Inimigo (3,3) Norte 1 1 1 1 []</span></span>
+<span class="lineno">  143 </span>
+<span class="lineno">  144 </span>projetil1 :: Projetil
+<span class="lineno">  145 </span><span class="decl"><span class="nottickedoff">projetil1 = Projetil Fogo (Finita 1)</span></span>
+
+</pre>
+</body>
+</html>

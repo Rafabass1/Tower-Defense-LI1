@@ -1,0 +1,159 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style type="text/css">
+span.lineno { color: white; background: #aaaaaa; border-right: solid white 12px }
+span.nottickedoff { background: yellow}
+span.istickedoff { background: white }
+span.tickonlyfalse { margin: -1px; border: 1px solid #f20913; background: #f20913 }
+span.tickonlytrue  { margin: -1px; border: 1px solid #60de51; background: #60de51 }
+span.funcount { font-size: small; color: orange; z-index: 2; position: absolute; right: 20 }
+span.decl { font-weight: bold }
+span.spaces    { background: white }
+</style>
+</head>
+<body>
+<pre>
+<span class="decl"><span class="nottickedoff">never executed</span> <span class="tickonlytrue">always true</span> <span class="tickonlyfalse">always false</span></span>
+</pre>
+<pre>
+<span class="lineno">    1 </span>{-|
+<span class="lineno">    2 </span>Module      : Tarefa3
+<span class="lineno">    3 </span>Description : Mecânica do Jogo
+<span class="lineno">    4 </span>Copyright   : Nuno Henrique Dias Pereira &lt;a110067@alunos.uminho.pt&gt;
+<span class="lineno">    5 </span>              Rafael Figueiras Esteves &lt;a112032@alunos.uminho.pt&gt;
+<span class="lineno">    6 </span>
+<span class="lineno">    7 </span>
+<span class="lineno">    8 </span>Módulo para a realização da Tarefa 3 de LI1 em 2024/25.
+<span class="lineno">    9 </span>-}
+<span class="lineno">   10 </span>module Tarefa3 where
+<span class="lineno">   11 </span>
+<span class="lineno">   12 </span>import LI12425
+<span class="lineno">   13 </span>
+<span class="lineno">   14 </span>import Tarefa2
+<span class="lineno">   15 </span>
+<span class="lineno">   16 </span>-- | Atualiza o estado do jogo
+<span class="lineno">   17 </span>atualizaJogo :: Tempo -&gt; Jogo -&gt; Jogo
+<span class="lineno">   18 </span><span class="decl"><span class="nottickedoff">atualizaJogo delta jogo = jogo { portaisJogo = novosPortais, inimigosJogo = novosInimigos }</span>
+<span class="lineno">   19 </span><span class="spaces">  </span><span class="nottickedoff">where</span>
+<span class="lineno">   20 </span><span class="spaces">    </span><span class="nottickedoff">(novosPortais, novosInimigos) = foldl (atualizaPortal delta) ([], inimigosJogo jogo) (portaisJogo jogo)</span></span>
+<span class="lineno">   21 </span>{-jogo { torresJogo = novasTorres, inimigosJogo = novosInimigos }
+<span class="lineno">   22 </span>  where
+<span class="lineno">   23 </span>    (novasTorres, novosInimigos) = foldl atualizaTorre ([], inimigosJogo jogo) (torresJogo jogo)
+<span class="lineno">   24 </span>-} -- isto era o que tinhas escrito mas como d´a erro, deixei aqui em baixo.
+<span class="lineno">   25 </span>
+<span class="lineno">   26 </span>-- TORRES
+<span class="lineno">   27 </span>
+<span class="lineno">   28 </span>-- | Atualiza o estado de uma torre e os inimigos no jogo devolve um tuplo de uma torre com os inimigos que ficaram vivos depois de serem atingidos pelos seus projeteis
+<span class="lineno">   29 </span>atualizaTorre :: Tempo -&gt; Torre -&gt; [Inimigo] -&gt; (Torre, [Inimigo])
+<span class="lineno">   30 </span><span class="decl"><span class="istickedoff">atualizaTorre delta torre inimigos </span>
+<span class="lineno">   31 </span><span class="spaces"> </span><span class="istickedoff">| tempoTorre torre &gt; 0 = atualizaTorre <span class="nottickedoff">delta</span> torre { tempoTorre = tempoTorre torre - delta } <span class="nottickedoff">inimigos</span></span>
+<span class="lineno">   32 </span><span class="spaces"> </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> = (torreNova , inimigosNovos )</span>
+<span class="lineno">   33 </span><span class="spaces"> </span><span class="istickedoff">where torreNova = torre { tempoTorre = cicloTorre torre }</span>
+<span class="lineno">   34 </span><span class="spaces">       </span><span class="istickedoff">inimigosNovos = inimigosVivos (map (atingeInimigo torre) (rajada torre inimigos))</span></span>    
+<span class="lineno">   35 </span> 
+<span class="lineno">   36 </span>-- | Atualiza o estado de todas as torres no jogo
+<span class="lineno">   37 </span>atualizaTorres :: Tempo -&gt; [Torre] -&gt; [Inimigo] -&gt; [(Torre,[Inimigo])]  -- mano nao faco ideia se isto esta bem, nao sei oqq a funcao tem q devolver so fiz de alguma maneira e rezei
+<span class="lineno">   38 </span><span class="decl"><span class="istickedoff">atualizaTorres _ [] _ = []</span>
+<span class="lineno">   39 </span><span class="spaces"></span><span class="istickedoff">atualizaTorres delta (t:ts) i = atualizaTorre delta t i : atualizaTorres delta ts <span class="nottickedoff">i</span></span></span>   
+<span class="lineno">   40 </span>
+<span class="lineno">   41 </span>-- INIMIGOS
+<span class="lineno">   42 </span>
+<span class="lineno">   43 </span>-- | Tendo em conta a rajada de uma torre devolve os inimigos que vao ser atingidos por projeteis dessa torre
+<span class="lineno">   44 </span>rajada :: Torre -&gt; [Inimigo] -&gt; [Inimigo]
+<span class="lineno">   45 </span><span class="decl"><span class="istickedoff">rajada torre inimigos  = take (rajadaTorre torre) (inimigosNoAlcance torre inimigos)</span></span>
+<span class="lineno">   46 </span> 
+<span class="lineno">   47 </span>-- | Retira os inimigos mortos da lista de inimigos
+<span class="lineno">   48 </span>inimigosVivos :: [Inimigo] -&gt; [Inimigo]
+<span class="lineno">   49 </span><span class="decl"><span class="istickedoff">inimigosVivos [] = []</span>
+<span class="lineno">   50 </span><span class="spaces"></span><span class="istickedoff">inimigosVivos (i:is) </span>
+<span class="lineno">   51 </span><span class="spaces"> </span><span class="istickedoff">| vidaInimigo i &lt;= 0 = inimigosVivos is</span>
+<span class="lineno">   52 </span><span class="spaces"> </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> = i : inimigosVivos is</span></span>
+<span class="lineno">   53 </span>
+<span class="lineno">   54 </span> -- | Atualiza a posição de um inimigo com base na sua direção e velocidade
+<span class="lineno">   55 </span>atualizaPosicaoInimigo :: Tempo -&gt; Inimigo -&gt; Inimigo
+<span class="lineno">   56 </span><span class="decl"><span class="istickedoff">atualizaPosicaoInimigo delta inimigo = inimigo { posicaoInimigo = novaPosicao }</span>
+<span class="lineno">   57 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   58 </span><span class="spaces">    </span><span class="istickedoff">(x, y) = posicaoInimigo inimigo</span>
+<span class="lineno">   59 </span><span class="spaces">    </span><span class="istickedoff">novaPosicao = case direcaoInimigo inimigo of</span>
+<span class="lineno">   60 </span><span class="spaces">      </span><span class="istickedoff">Norte -&gt; (x, y - velocidadeInimigo inimigo * delta)</span>
+<span class="lineno">   61 </span><span class="spaces">      </span><span class="istickedoff">Sul   -&gt; (x, y + velocidadeInimigo inimigo * delta)</span>
+<span class="lineno">   62 </span><span class="spaces">      </span><span class="istickedoff">Este  -&gt; <span class="nottickedoff">(x + velocidadeInimigo inimigo * delta, y)</span></span>
+<span class="lineno">   63 </span><span class="spaces">      </span><span class="istickedoff">Oeste -&gt; <span class="nottickedoff">(x - velocidadeInimigo inimigo * delta, y)</span></span></span>
+<span class="lineno">   64 </span>
+<span class="lineno">   65 </span>-- | Atualiza a lista de inimigos no jogo
+<span class="lineno">   66 </span>atualizaInimigos :: Tempo -&gt; [Inimigo] -&gt; [Inimigo]
+<span class="lineno">   67 </span><span class="decl"><span class="istickedoff">atualizaInimigos delta = map (atualizaPosicaoInimigo delta . projetilInimigo)</span></span>
+<span class="lineno">   68 </span>
+<span class="lineno">   69 </span>-- | Aplica ao inimigo os efeitos dos projeteis em que nele estao ativos
+<span class="lineno">   70 </span>projetilInimigo :: Inimigo -&gt; Inimigo
+<span class="lineno">   71 </span><span class="decl"><span class="istickedoff">projetilInimigo i </span>
+<span class="lineno">   72 </span><span class="spaces"> </span><span class="istickedoff">| <span class="tickonlyfalse">existeGelo projet</span> = <span class="nottickedoff">i {velocidadeInimigo = 0}</span> </span>
+<span class="lineno">   73 </span><span class="spaces"> </span><span class="istickedoff">| <span class="tickonlyfalse">existeResina projet</span> = <span class="nottickedoff">i {velocidadeInimigo = (velocidadeInimigo i) * 0.7}</span></span>
+<span class="lineno">   74 </span><span class="spaces"> </span><span class="istickedoff">| existeFogo projet = i {vidaInimigo = (vidaInimigo i) - 1}</span>
+<span class="lineno">   75 </span><span class="spaces"> </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> = i</span>
+<span class="lineno">   76 </span><span class="spaces">  </span><span class="istickedoff">where projet = projeteisAtivos (projeteisInimigo i)</span></span>
+<span class="lineno">   77 </span>
+<span class="lineno">   78 </span>-- | Exclui da lista de uma lista de projeteis os projeteis que ja acabaram a sua duracao
+<span class="lineno">   79 </span>projeteisAtivos :: [Projetil] -&gt; [Projetil]
+<span class="lineno">   80 </span><span class="decl"><span class="istickedoff">projeteisAtivos [] = []</span>
+<span class="lineno">   81 </span><span class="spaces"></span><span class="istickedoff">projeteisAtivos (p:ps) </span>
+<span class="lineno">   82 </span><span class="spaces"> </span><span class="istickedoff">| duracaoProjetil p == Infinita = p : projeteisAtivos ps</span>
+<span class="lineno">   83 </span><span class="spaces"> </span><span class="istickedoff">| <span class="tickonlyfalse">duracaoProjetil p &lt;= Finita 0</span> =  <span class="nottickedoff">projeteisAtivos ps</span></span>
+<span class="lineno">   84 </span><span class="spaces"> </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> = p : projeteisAtivos ps</span></span>
+<span class="lineno">   85 </span>
+<span class="lineno">   86 </span>-- | Recebe a lista de inimigos ativos e a base e devolve a um tuplo da base retirando a vida consuante se tem inimigos na mesma posicao e a lista de inimigos que estao numa posicao diferente da base
+<span class="lineno">   87 </span>inimigoBase :: [Inimigo] -&gt; Base -&gt; (Base,[Inimigo])
+<span class="lineno">   88 </span><span class="decl"><span class="istickedoff">inimigoBase i b = (baseNova i b, filter (\x -&gt; posicaoInimigo x /= posicaoBase b) i)</span>
+<span class="lineno">   89 </span><span class="spaces">  </span><span class="istickedoff">where baseNova :: [Inimigo] -&gt; Base -&gt; Base</span>
+<span class="lineno">   90 </span><span class="spaces">        </span><span class="istickedoff">baseNova [] b = b</span>
+<span class="lineno">   91 </span><span class="spaces">        </span><span class="istickedoff">baseNova (i:is) b </span>
+<span class="lineno">   92 </span><span class="spaces">         </span><span class="istickedoff">| <span class="tickonlyfalse">posicaoInimigo i == posicaoBase b</span> = <span class="nottickedoff">baseNova is (b {vidaBase = vidaBase b - ataqueInimigo i})</span></span>
+<span class="lineno">   93 </span><span class="spaces">         </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> = baseNova is b</span></span>
+<span class="lineno">   94 </span>
+<span class="lineno">   95 </span>-- | Recebe uma lista de inimigos e creditos e adiciona a esses creditos o butim dos inimigos mortos dessa lista
+<span class="lineno">   96 </span>creditosInimigosMortos :: [Inimigo] -&gt; Creditos -&gt; Creditos
+<span class="lineno">   97 </span><span class="decl"><span class="istickedoff">creditosInimigosMortos [] creditos = creditos </span>
+<span class="lineno">   98 </span><span class="spaces"></span><span class="istickedoff">creditosInimigosMortos (i:is) creditos</span>
+<span class="lineno">   99 </span><span class="spaces">  </span><span class="istickedoff">| vidaInimigo i &lt;= 0 = creditosInimigosMortos is (creditos + butimInimigo i) </span>
+<span class="lineno">  100 </span><span class="spaces">  </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> = creditosInimigosMortos is creditos</span></span>
+<span class="lineno">  101 </span> 
+<span class="lineno">  102 </span>-- | Recebe a lista de inimigos ativos e a base e devolve  um tuplo da base acrescentando aos creditos da mesma o butim dos inimigos mortos e a lista de inimigos que estao vivos
+<span class="lineno">  103 </span>inimigosMortos :: [Inimigo] -&gt; Base -&gt; (Base, [Inimigo])
+<span class="lineno">  104 </span><span class="decl"><span class="istickedoff">inimigosMortos i b = (b {creditosBase  = creditosInimigosMortos i (creditosBase b)}, inimigosVivos i)</span></span>
+<span class="lineno">  105 </span>
+<span class="lineno">  106 </span>{- No  geral tentei fazer  o comportamento das torres, e una parte do comportamento dos inimigos 
+<span class="lineno">  107 </span>    , nao percebi muito bem como fazer a parte de eles andarem mas tentei fazer o 1. e o 3 do 
+<span class="lineno">  108 </span>      comportamento dos inimigos e dar lhes o efeito consoante os prpjeteis neles
+<span class="lineno">  109 </span>      da uma vista de olhos e ve se farias da mesma maneira-}
+<span class="lineno">  110 </span>
+<span class="lineno">  111 </span>-- PORTAIS:
+<span class="lineno">  112 </span>
+<span class="lineno">  113 </span>-- | Atualiza o estado de um portal e os inimigos no jogo
+<span class="lineno">  114 </span>atualizaPortal :: Tempo -&gt; ([Portal], [Inimigo]) -&gt; Portal -&gt; ([Portal], [Inimigo])
+<span class="lineno">  115 </span><span class="decl"><span class="istickedoff">atualizaPortal delta (portais, inimigos) portal = (portalNovo : portais, inimigosNovos)</span>
+<span class="lineno">  116 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  117 </span><span class="spaces">    </span><span class="istickedoff">(portalNovo, novosInimigos) = ativaInimigosPortal <span class="nottickedoff">delta</span> portal inimigos</span>
+<span class="lineno">  118 </span><span class="spaces">    </span><span class="istickedoff">inimigosNovos = inimigos ++ novosInimigos</span></span>
+<span class="lineno">  119 </span>
+<span class="lineno">  120 </span>-- | Ativa inimigos de um portal se as condições forem satisfeitas
+<span class="lineno">  121 </span>ativaInimigosPortal :: Tempo -&gt; Portal -&gt; [Inimigo] -&gt; (Portal, [Inimigo])
+<span class="lineno">  122 </span><span class="decl"><span class="istickedoff">ativaInimigosPortal delta portal inimigos = (portal { ondasPortal = reverse novasOndas }, novosInimigos)</span>
+<span class="lineno">  123 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  124 </span><span class="spaces">    </span><span class="istickedoff">(novasOndas, novosInimigos) = foldl (ativaOnda <span class="nottickedoff">delta</span>) ([], inimigos) (ondasPortal portal)</span></span>
+<span class="lineno">  125 </span>
+<span class="lineno">  126 </span>-- | Ativa inimigos de uma onda se as condições forem satisfeitas
+<span class="lineno">  127 </span>ativaOnda :: Tempo -&gt; ([Onda], [Inimigo]) -&gt; Onda -&gt; ([Onda], [Inimigo])
+<span class="lineno">  128 </span><span class="decl"><span class="istickedoff">ativaOnda delta (ondas, inimigos) onda</span>
+<span class="lineno">  129 </span><span class="spaces">  </span><span class="istickedoff">| <span class="tickonlyfalse">entradaOnda onda &gt; 0</span> = <span class="nottickedoff">(onda { entradaOnda = entradaOnda onda - delta } : ondas, inimigos)</span></span>
+<span class="lineno">  130 </span><span class="spaces">  </span><span class="istickedoff">| <span class="tickonlyfalse">tempoOnda onda &gt; 0</span> = <span class="nottickedoff">(onda { tempoOnda = tempoOnda onda - delta } : ondas, inimigos)</span></span>
+<span class="lineno">  131 </span><span class="spaces">  </span><span class="istickedoff">| null (inimigosOnda onda) = (ondas, inimigos)</span>
+<span class="lineno">  132 </span><span class="spaces">  </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> = (onda { inimigosOnda = tail (inimigosOnda onda), tempoOnda = cicloOnda onda } : ondas, inimigo : inimigos)</span>
+<span class="lineno">  133 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  134 </span><span class="spaces">    </span><span class="istickedoff">inimigo = head (inimigosOnda onda)</span></span>
+<span class="lineno">  135 </span>
+<span class="lineno">  136 </span>-- O delta na função ativaOnda representa o intervalo de tempo que passou desde a última atualização do jogo. E´ usado para decrementar os tempos de entrada (entradaOnda) e de lançamento (tempoOnda) das ondas.
+
+</pre>
+</body>
+</html>

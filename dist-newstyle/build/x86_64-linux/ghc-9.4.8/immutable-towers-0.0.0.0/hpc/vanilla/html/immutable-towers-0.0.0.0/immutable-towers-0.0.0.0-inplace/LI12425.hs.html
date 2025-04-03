@@ -1,0 +1,210 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style type="text/css">
+span.lineno { color: white; background: #aaaaaa; border-right: solid white 12px }
+span.nottickedoff { background: yellow}
+span.istickedoff { background: white }
+span.tickonlyfalse { margin: -1px; border: 1px solid #f20913; background: #f20913 }
+span.tickonlytrue  { margin: -1px; border: 1px solid #60de51; background: #60de51 }
+span.funcount { font-size: small; color: orange; z-index: 2; position: absolute; right: 20 }
+span.decl { font-weight: bold }
+span.spaces    { background: white }
+</style>
+</head>
+<body>
+<pre>
+<span class="decl"><span class="nottickedoff">never executed</span> <span class="tickonlytrue">always true</span> <span class="tickonlyfalse">always false</span></span>
+</pre>
+<pre>
+<span class="lineno">    1 </span>{-|
+<span class="lineno">    2 </span>Module      : LI12425
+<span class="lineno">    3 </span>Description : Definições base do jogo
+<span class="lineno">    4 </span>Copyright   : Nelson Estevão &lt;d12733@di.uminho.pt&gt;
+<span class="lineno">    5 </span>              Olga Pacheco   &lt;omp@di.uminho.pt&gt;
+<span class="lineno">    6 </span>              Pedro Peixoto  &lt;d14110@di.uminho.pt&gt;
+<span class="lineno">    7 </span>              Xavier Pinho   &lt;d12736@di.uminho.pt&gt;
+<span class="lineno">    8 </span>
+<span class="lineno">    9 </span>Tipos de dados e funções auxiliares para a realização do projeto de LI1 em 2024/25.
+<span class="lineno">   10 </span>-}
+<span class="lineno">   11 </span>module LI12425 (
+<span class="lineno">   12 </span>    -- * Tipos de dados
+<span class="lineno">   13 </span>    -- ** Básicos
+<span class="lineno">   14 </span>    Creditos, Direcao(..), Distancia, Duracao(..), Posicao, Semente, Tempo,
+<span class="lineno">   15 </span>    -- ** Mapas
+<span class="lineno">   16 </span>    Mapa, Terreno(..),
+<span class="lineno">   17 </span>    -- ** Entidades
+<span class="lineno">   18 </span>    Base(..), Torre(..), Portal(..), Inimigo(..), TipoProjetil(..), Projetil(..),
+<span class="lineno">   19 </span>    -- ** Jogo
+<span class="lineno">   20 </span>    Jogo(..), Onda(..), Loja,
+<span class="lineno">   21 </span>    -- * Funções auxiliares
+<span class="lineno">   22 </span>    geraAleatorios
+<span class="lineno">   23 </span>    ) where
+<span class="lineno">   24 </span>
+<span class="lineno">   25 </span>import System.Random (mkStdGen, randoms)
+<span class="lineno">   26 </span>
+<span class="lineno">   27 </span>-- | Tipo de terrenno do mapa.
+<span class="lineno">   28 </span>data Terreno
+<span class="lineno">   29 </span>  = -- | Torres constroem-se sobre o relvado do mapa.
+<span class="lineno">   30 </span>    Relva
+<span class="lineno">   31 </span>  | -- | A base e os portais constroem-se sobre caminhos de terra do mapa. Além disso, inimigos movem-se sobre estes terrenos.
+<span class="lineno">   32 </span>    Terra
+<span class="lineno">   33 </span>  | -- | Água para efeito decorativo, mas onde não se pode construir, nem os inimigos se podem mover.
+<span class="lineno">   34 </span>    Agua
+<span class="lineno">   35 </span>  deriving (<span class="decl"><span class="istickedoff"><span class="decl"><span class="nottickedoff">Eq</span></span></span></span>, <span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff">Show</span></span></span></span></span></span>)
+<span class="lineno">   36 </span>
+<span class="lineno">   37 </span>-- | Mapa do jogo composto por uma matriz de terrenos.
+<span class="lineno">   38 </span>type Mapa = [[Terreno]]
+<span class="lineno">   39 </span>
+<span class="lineno">   40 </span>-- | Coordenada bilateral de uma entidade no jogo, representante do seu centro.
+<span class="lineno">   41 </span>-- O referencial tem origem no canto superior esquerdo, com eixos x e y positivos para a direita e para baixo, respectivamente.
+<span class="lineno">   42 </span>type Posicao = (Float, Float)
+<span class="lineno">   43 </span>
+<span class="lineno">   44 </span>-- | Moeda do jogo.
+<span class="lineno">   45 </span>type Creditos = Int
+<span class="lineno">   46 </span>
+<span class="lineno">   47 </span>-- | Base de operações do jogador.
+<span class="lineno">   48 </span>data Base = Base
+<span class="lineno">   49 </span>  { -- | Vida da base. Quando esta chega a zero, o jogador perde o jogo.
+<span class="lineno">   50 </span>    <span class="istickedoff"><span class="decl"><span class="istickedoff">vidaBase</span></span></span> :: Float,
+<span class="lineno">   51 </span>    -- | Posição da base no mapa. A base deve estar sobre um terreno de terra.
+<span class="lineno">   52 </span>    <span class="istickedoff"><span class="decl"><span class="istickedoff">posicaoBase</span></span></span> :: Posicao,
+<span class="lineno">   53 </span>    -- | Balanço de créditos do jogador.
+<span class="lineno">   54 </span>    <span class="istickedoff"><span class="decl"><span class="istickedoff">creditosBase</span></span></span> :: Creditos
+<span class="lineno">   55 </span>  }
+<span class="lineno">   56 </span>  deriving (<span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff">Show</span></span></span></span></span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="nottickedoff">Eq</span></span></span></span>) -- !!!!!! ADICIONEI O EQ ANTES ERA SO &quot;deriving (Show)&quot; !!!!!!!!!!
+<span class="lineno">   57 </span>
+<span class="lineno">   58 </span>-- | Distância entre duas posições.
+<span class="lineno">   59 </span>type Distancia = Float
+<span class="lineno">   60 </span>
+<span class="lineno">   61 </span>-- | Tempo em segundos.
+<span class="lineno">   62 </span>type Tempo = Float
+<span class="lineno">   63 </span>
+<span class="lineno">   64 </span>-- | Representa uma duração em segundos
+<span class="lineno">   65 </span>data Duracao
+<span class="lineno">   66 </span>  = -- | Duração em segundos
+<span class="lineno">   67 </span>    Finita Tempo
+<span class="lineno">   68 </span>  | -- | Duração infinita
+<span class="lineno">   69 </span>    Infinita
+<span class="lineno">   70 </span>  deriving (<span class="decl"><span class="istickedoff"><span class="decl"><span class="nottickedoff">Eq</span></span></span></span>, <span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff">Show</span></span></span></span></span></span>, <span class="decl"><span class="nottickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff">Ord</span></span></span></span></span></span></span></span></span></span></span></span></span></span>)
+<span class="lineno">   71 </span>
+<span class="lineno">   72 </span>-- | Torre que dispara projéteis contra inimigos.
+<span class="lineno">   73 </span>data Torre = Torre
+<span class="lineno">   74 </span>  { -- | Posição da torre no mapa.
+<span class="lineno">   75 </span>    <span class="istickedoff"><span class="decl"><span class="istickedoff">posicaoTorre</span></span></span> :: Posicao,
+<span class="lineno">   76 </span>    -- | Redução de vida no inimigo pelo impacto do projétil.
+<span class="lineno">   77 </span>    <span class="nottickedoff"><span class="decl"><span class="nottickedoff">danoTorre</span></span></span> :: Float,
+<span class="lineno">   78 </span>    -- | Alcance circular da torre.
+<span class="lineno">   79 </span>    <span class="istickedoff"><span class="decl"><span class="istickedoff">alcanceTorre</span></span></span> :: Float,
+<span class="lineno">   80 </span>    -- | Número de máximo de inimigos simultaneamente atingidos por uma rajada de tiros.
+<span class="lineno">   81 </span>    <span class="istickedoff"><span class="decl"><span class="istickedoff">rajadaTorre</span></span></span> :: Int,
+<span class="lineno">   82 </span>    -- | Ciclo de tempo entre rajadas de tiros.
+<span class="lineno">   83 </span>    <span class="istickedoff"><span class="decl"><span class="istickedoff">cicloTorre</span></span></span> :: Tempo,
+<span class="lineno">   84 </span>    -- | Tempo restante para a próxima rajada de tiros.
+<span class="lineno">   85 </span>    <span class="istickedoff"><span class="decl"><span class="istickedoff">tempoTorre</span></span></span> :: Tempo,
+<span class="lineno">   86 </span>    -- | Efeito secundário associado ao tipo de projétil da torre.
+<span class="lineno">   87 </span>    <span class="nottickedoff"><span class="decl"><span class="nottickedoff">projetilTorre</span></span></span> :: Projetil
+<span class="lineno">   88 </span>  }
+<span class="lineno">   89 </span>  deriving (<span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff">Show</span></span></span></span></span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="nottickedoff">Eq</span></span></span></span>) -- !!!!!! ADICIONEI O EQ ANTES ERA SO &quot;deriving (Show)&quot; !!!!!!!!!!
+<span class="lineno">   90 </span>
+<span class="lineno">   91 </span>-- | Loja de torres disponíveis para construir por uma quantidade de créditos.
+<span class="lineno">   92 </span>type Loja = [(Creditos, Torre)]
+<span class="lineno">   93 </span>
+<span class="lineno">   94 </span>-- | Tipo de projétil disparado por uma torre.
+<span class="lineno">   95 </span>data TipoProjetil = Fogo | Gelo | Resina
+<span class="lineno">   96 </span>  deriving (<span class="decl"><span class="istickedoff"><span class="decl"><span class="nottickedoff">Eq</span></span></span></span>, <span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff">Show</span></span></span></span></span></span>)
+<span class="lineno">   97 </span>
+<span class="lineno">   98 </span>-- | Projétil aplicado por uma torre.
+<span class="lineno">   99 </span>data Projetil = Projetil
+<span class="lineno">  100 </span>  { -- | Tipo de projétil.
+<span class="lineno">  101 </span>    <span class="istickedoff"><span class="decl"><span class="istickedoff">tipoProjetil</span></span></span> :: TipoProjetil,
+<span class="lineno">  102 </span>    -- | Duração do efeito do projétil no inimigo.
+<span class="lineno">  103 </span>    <span class="istickedoff"><span class="decl"><span class="istickedoff">duracaoProjetil</span></span></span> :: Duracao
+<span class="lineno">  104 </span>  }
+<span class="lineno">  105 </span>  deriving (<span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff">Show</span></span></span></span></span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="nottickedoff">Eq</span></span></span></span>) -- !!!!!! ADICIONEI O EQ ANTES ERA SO &quot;deriving (Show)&quot; !!!!!!!!!!
+<span class="lineno">  106 </span>
+<span class="lineno">  107 </span>-- | Direção de movimento de uma entidade no jogo.
+<span class="lineno">  108 </span>data Direcao
+<span class="lineno">  109 </span>  = Norte
+<span class="lineno">  110 </span>  | Sul
+<span class="lineno">  111 </span>  | Este
+<span class="lineno">  112 </span>  | Oeste
+<span class="lineno">  113 </span>  deriving (<span class="decl"><span class="istickedoff"><span class="decl"><span class="nottickedoff">Eq</span></span></span></span>, <span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff">Show</span></span></span></span></span></span>)
+<span class="lineno">  114 </span>
+<span class="lineno">  115 </span>-- | Inimigo que se move em direção à base do jogador.
+<span class="lineno">  116 </span>data Inimigo = Inimigo
+<span class="lineno">  117 </span>  { -- | Posição do inimigo no mapa.
+<span class="lineno">  118 </span>    <span class="istickedoff"><span class="decl"><span class="istickedoff">posicaoInimigo</span></span></span> :: Posicao,
+<span class="lineno">  119 </span>    -- | Direção do último movimento do inimigo.
+<span class="lineno">  120 </span>    <span class="istickedoff"><span class="decl"><span class="istickedoff">direcaoInimigo</span></span></span> :: Direcao,
+<span class="lineno">  121 </span>    -- | Vida do inimigo.
+<span class="lineno">  122 </span>    <span class="istickedoff"><span class="decl"><span class="istickedoff">vidaInimigo</span></span></span> :: Float,
+<span class="lineno">  123 </span>    -- | Velocidade do inimigo.
+<span class="lineno">  124 </span>    <span class="istickedoff"><span class="decl"><span class="istickedoff">velocidadeInimigo</span></span></span> :: Float,
+<span class="lineno">  125 </span>    -- | Dano causado pelo inimigo na base do jogador.
+<span class="lineno">  126 </span>    <span class="nottickedoff"><span class="decl"><span class="nottickedoff">ataqueInimigo</span></span></span> :: Float,
+<span class="lineno">  127 </span>    -- | Créditos que o jogador recebe ao derrotar o inimigo.
+<span class="lineno">  128 </span>    <span class="istickedoff"><span class="decl"><span class="istickedoff">butimInimigo</span></span></span> :: Creditos,
+<span class="lineno">  129 </span>    -- | Efeitos secundários ativos no inimigo.
+<span class="lineno">  130 </span>    <span class="istickedoff"><span class="decl"><span class="istickedoff">projeteisInimigo</span></span></span> :: [Projetil]
+<span class="lineno">  131 </span>  }
+<span class="lineno">  132 </span>  deriving (<span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="istickedoff">Show</span></span></span></span></span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="nottickedoff">Eq</span></span></span></span>) -- !!!!!! ADICIONEI O EQ ANTES ERA SO &quot;deriving (Show)&quot; !!!!!!!!!!
+<span class="lineno">  133 </span>
+<span class="lineno">  134 </span>-- | Onda de inimigos que saem de um portal.
+<span class="lineno">  135 </span>data Onda = Onda
+<span class="lineno">  136 </span>  { -- | Inimigos que compõem a onda.
+<span class="lineno">  137 </span>    <span class="istickedoff"><span class="decl"><span class="istickedoff">inimigosOnda</span></span></span> :: [Inimigo],
+<span class="lineno">  138 </span>    -- | Tempo em segundos entre a entrada de cada inimigo.
+<span class="lineno">  139 </span>    <span class="istickedoff"><span class="decl"><span class="istickedoff">cicloOnda</span></span></span> :: Tempo,
+<span class="lineno">  140 </span>    -- | Tempo restante, em segundos, para a entrada do próximo inimigo da onda.
+<span class="lineno">  141 </span>    <span class="istickedoff"><span class="decl"><span class="istickedoff">tempoOnda</span></span></span> :: Tempo,
+<span class="lineno">  142 </span>    -- | Tempo restante, em segundos, para a entrada da onda.
+<span class="lineno">  143 </span>    <span class="istickedoff"><span class="decl"><span class="istickedoff">entradaOnda</span></span></span> :: Tempo
+<span class="lineno">  144 </span>  }
+<span class="lineno">  145 </span>  deriving (<span class="decl"><span class="istickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="istickedoff">Show</span></span></span></span></span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="nottickedoff">Eq</span></span></span></span>) -- !!!!!! ADICIONEI O EQ ANTES ERA SO &quot;deriving (Show)&quot; !!!!!!!!!!
+<span class="lineno">  146 </span>
+<span class="lineno">  147 </span>-- | Portal de entrada de inimigos no mapa.
+<span class="lineno">  148 </span>data Portal = Portal
+<span class="lineno">  149 </span>  { -- | Posição do portal no mapa. O portal deve estar sobre um terreno de terra.
+<span class="lineno">  150 </span>    <span class="istickedoff"><span class="decl"><span class="istickedoff">posicaoPortal</span></span></span> :: Posicao,
+<span class="lineno">  151 </span>    -- | Ondas de inimigos que saem do portal.
+<span class="lineno">  152 </span>    <span class="istickedoff"><span class="decl"><span class="istickedoff">ondasPortal</span></span></span> :: [Onda]
+<span class="lineno">  153 </span>  }
+<span class="lineno">  154 </span>  deriving (<span class="decl"><span class="istickedoff"><span class="decl"><span class="nottickedoff">Eq</span></span></span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="istickedoff">Show</span></span></span></span></span></span>) -- !!!!!! adicionei o Eq antes era so &quot;deriving (Show)&quot; !!!!!!!!!!
+<span class="lineno">  155 </span>
+<span class="lineno">  156 </span>-- | Estado do jogo. Um jogo é composto pela base, vários portais, várias torres, um mapa, vários inimigos e a loja.
+<span class="lineno">  157 </span>data Jogo = Jogo
+<span class="lineno">  158 </span>  { -- | Base de operações do jogador.
+<span class="lineno">  159 </span>    <span class="istickedoff"><span class="decl"><span class="istickedoff">baseJogo</span></span></span> :: Base,
+<span class="lineno">  160 </span>    -- | Portais de entrada de inimigos no mapa.
+<span class="lineno">  161 </span>    <span class="istickedoff"><span class="decl"><span class="istickedoff">portaisJogo</span></span></span> :: [Portal],
+<span class="lineno">  162 </span>    -- | Torres construídas pelo jogador.
+<span class="lineno">  163 </span>    <span class="istickedoff"><span class="decl"><span class="istickedoff">torresJogo</span></span></span> :: [Torre],
+<span class="lineno">  164 </span>    -- | Mapa retangular do jogo.
+<span class="lineno">  165 </span>    <span class="istickedoff"><span class="decl"><span class="istickedoff">mapaJogo</span></span></span> :: Mapa,
+<span class="lineno">  166 </span>    -- | Inimigos em movimento no mapa.
+<span class="lineno">  167 </span>    <span class="istickedoff"><span class="decl"><span class="istickedoff">inimigosJogo</span></span></span> :: [Inimigo],
+<span class="lineno">  168 </span>    -- | Loja de torres disponíveis para construir.
+<span class="lineno">  169 </span>    <span class="nottickedoff"><span class="decl"><span class="nottickedoff">lojaJogo</span></span></span> :: Loja
+<span class="lineno">  170 </span>  }
+<span class="lineno">  171 </span>  deriving (<span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff">Show</span></span></span></span></span></span>)
+<span class="lineno">  172 </span>
+<span class="lineno">  173 </span>-- | Valor inicial que determina a sequência de números pseudo-aleatórios.
+<span class="lineno">  174 </span>type Semente = Int
+<span class="lineno">  175 </span>
+<span class="lineno">  176 </span>{-| Função que gera uma lista de números aleatórios a partir de uma 'Semente'.
+<span class="lineno">  177 </span>
+<span class="lineno">  178 </span>== Exemplos
+<span class="lineno">  179 </span>
+<span class="lineno">  180 </span>&gt;&gt;&gt; geraAleatorios 2425 3
+<span class="lineno">  181 </span>[9108974057934916489,3509742222561512871,1534041518507426227]
+<span class="lineno">  182 </span>
+<span class="lineno">  183 </span>&gt;&gt;&gt; geraAleatorios 10 1
+<span class="lineno">  184 </span>[3575835729477015470]
+<span class="lineno">  185 </span>-}
+<span class="lineno">  186 </span>geraAleatorios :: Semente -&gt; Int -&gt; [Int]
+<span class="lineno">  187 </span><span class="decl"><span class="nottickedoff">geraAleatorios s c = take c $ randoms (mkStdGen s)</span></span>
+
+</pre>
+</body>
+</html>
