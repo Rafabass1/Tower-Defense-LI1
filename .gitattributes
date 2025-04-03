@@ -1,0 +1,4 @@
+*.hs linguist-detectable=true
+*.html linguist-vendored
+*.c linguist-vendored
+*.css linguist-vendored
